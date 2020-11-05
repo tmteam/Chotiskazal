@@ -61,6 +61,7 @@ namespace Chotiskazal.Bot
         }
         public Task SendTooltip(string tooltip) => _client.SendTextMessageAsync(_chatId, tooltip);
         public Task SendMessage(string message)=> _client.SendTextMessageAsync(_chatId, message);
+
         public Task SendMessage(string message, params InlineKeyboardButton[] buttons)
             => _client.SendTextMessageAsync(_chatId, message, replyMarkup:  new InlineKeyboardMarkup(buttons.Select(b=>new[]{b})));
         public async Task<Update> WaitUserInput()

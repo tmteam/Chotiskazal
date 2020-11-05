@@ -50,7 +50,11 @@ namespace Chotiskazal.Bot
         Task Examinate() => Chat.SendTodo();
         
         //show stats to user here
-        Task ShowStats()=> Chat.SendTodo();
+        Task ShowStats()
+        {
+            var statsFlow = new GraphsStatsFlow(Chat, WordsService);
+            return statsFlow.Enter();
+        }
 
         Task EnterWord(string text = null)
         {
