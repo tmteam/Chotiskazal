@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Chotiskazal.Bot.ChatFlows;
+using Chotiskazal.Logic.Services;
+using Dic.Logic.yapi;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Chotiskazal.Bot
@@ -11,7 +14,9 @@ namespace Chotiskazal.Bot
         {
             Chat = chat;
         }
-
+        public NewWordsService WordsService { get; set; }
+        public YandexDictionaryApiClient YaDictionaryApi { get; set; }
+        public YandexTranslateApiClient YaTranslateApi { get; set; }
         public Chat Chat { get;}
         
         public async Task Run(){ 
@@ -47,9 +52,12 @@ namespace Chotiskazal.Bot
         //show stats to user here
         Task ShowStats()=> Chat.SendTodo();
 
-        async Task SelectTranslation(string text)
+        Task SelectTranslation(string text)
         {
-            string[] pairs = {
+            var mode = new WordAdditionMode(Chat, YaTranslateApi, YaDictionaryApi, text);
+            return mode.Enter(WordsService);
+            
+            /*string[] pairs = {
                 "тест, испытание, проверка,проба",
                 "тестирование, экзамен",
                 "анализ",
@@ -80,8 +88,10 @@ namespace Chotiskazal.Bot
                     }
                 }
                 var _ = Chat.SendMessage("Choose an translate option or press /start");
-            }
+            }*/
         }
+
+      
 
         Task HandleMainMenu(string command){
             switch (command){

@@ -1,6 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using Chotiskazal.Logic.DAL;
+using Chotiskazal.Logic.Services;
+using Dic.Logic.Dictionaries;
+using Dic.Logic.yapi;
+using Microsoft.Extensions.Configuration;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 
@@ -15,13 +20,37 @@ namespace Chotiskazal.Bot
         {
             TaskScheduler.UnobservedTaskException +=
                 (sender, args) => Console.WriteLine($"Unobserved ex {args.Exception}");
+            
+            
+            var builder = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false);
+            IConfigurationRoot configuration = builder.Build();
+
+            var yadicapiKey = configuration.GetSection("yadicapi").GetSection("key").Value;
+            var yadicapiTimeout = TimeSpan.FromSeconds(5);
+
+            var dbFileName = configuration.GetSection("wordDb").Value;
+            var yatransapiKey = configuration.GetSection("yatransapi").GetSection("key").Value;
+            var yatransapiTimeout = TimeSpan.FromSeconds(5);
+
+            _yapiDicClient = new YandexDictionaryApiClient(yadicapiKey, yadicapiTimeout);
+            _yapiTransClient = new YandexTranslateApiClient(yatransapiKey, yatransapiTimeout);
+            
+            var repo = new WordsRepository(dbFileName);
+            repo.ApplyMigrations();
+            
+            Console.WriteLine("Dic started");
+            _wordsService = new NewWordsService(new RuengDictionary(), repo);
+            
             _botClient = new TelegramBotClient(ApiToken);
 
             var me = _botClient.GetMeAsync().Result;
             Console.WriteLine(
                 $"Hello, World! I am user {me.Id} and my name is {me.FirstName}."
             );
+              
 
+            
             _botClient.OnUpdate+= BotClientOnOnUpdate;
             _botClient.OnMessage += Bot_OnMessage;
             _botClient.StartReceiving();
@@ -33,6 +62,9 @@ namespace Chotiskazal.Bot
         }
 
         static ConcurrentDictionary<long, ChatRoomFlow> _chats = new ConcurrentDictionary<long,ChatRoomFlow>();
+        private static YandexDictionaryApiClient _yapiDicClient;
+        private static YandexTranslateApiClient _yapiTransClient;
+        private static NewWordsService _wordsService;
 
         static ChatRoomFlow GetOrCreate(Telegram.Bot.Types.Chat chat)
         {
@@ -40,7 +72,12 @@ namespace Chotiskazal.Bot
                 return existedChatRoom;
 
             var newChat = new Chat(_botClient, chat);
-            var newChatRoom = new ChatRoomFlow(newChat);
+            var newChatRoom = new ChatRoomFlow(newChat)
+            {
+                YaDictionaryApi = _yapiDicClient,
+                YaTranslateApi = _yapiTransClient,
+                WordsService = _wordsService
+            };
             var task = newChatRoom.Run();
             task.ContinueWith((t) => Botlog.Write($"faulted {t.Exception}"), TaskContinuationOptions.OnlyOnFaulted);
             _chats.TryAdd(chat.Id, newChatRoom);
