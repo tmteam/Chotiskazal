@@ -52,10 +52,10 @@ namespace Chotiskazal.Bot
         //show stats to user here
         Task ShowStats()=> Chat.SendTodo();
 
-        Task SelectTranslation(string text)
+        Task EnterWord(string text = null)
         {
-            var mode = new WordAdditionMode(Chat, YaTranslateApi, YaDictionaryApi, text);
-            return mode.Enter(WordsService);
+            var mode = new AddingWordsMode(Chat, YaTranslateApi, YaDictionaryApi,WordsService);
+            return mode.Enter(text);
             
             /*string[] pairs = {
                 "тест, испытание, проверка,проба",
@@ -96,7 +96,7 @@ namespace Chotiskazal.Bot
         Task HandleMainMenu(string command){
             switch (command){
                 case "/help": SendHelp(); break;
-                case "/add":  return EnterWords(null);
+                case "/add":  return EnterWord(null);
                 case "/train": return Examinate();
                 case "/stats": ShowStats(); break;;
                 case "/start": break;
@@ -110,7 +110,7 @@ namespace Chotiskazal.Bot
         {
             while (true)
             {
-                Chat.SendMessage("Select mode, or enter a word to translate",
+                var _  = Chat.SendMessage("Select mode, or enter a word to translate",
                     Buttons.EnterWords,
                     Buttons.Exam,
                     Buttons.Stats);
@@ -121,7 +121,7 @@ namespace Chotiskazal.Bot
 
                     if (action.Message!=null)
                     {
-                        await EnterWords(action.Message.Text);
+                        await EnterWord(action.Message.Text);
                         return;
                     }
 
@@ -130,7 +130,7 @@ namespace Chotiskazal.Bot
                         var btn = action.CallbackQuery.Data;
                         if (btn == Buttons.EnterWords.CallbackData)
                         {
-                            await EnterWords();
+                            await EnterWord();
                             return;
                         }
                         else if (btn == Buttons.Exam.CallbackData)
@@ -148,20 +148,6 @@ namespace Chotiskazal.Bot
 
                     await SendNotAllowedTooltip();
                 }
-            }
-        }
-
-        async Task EnterWords(string text = null)
-        {
-            while (true)
-            {
-                if (text == null)
-                {
-                    var _ = Chat.SendMessage("Enter your word");
-                    text = await Chat.WaitUserTextInput();
-                }
-                await SelectTranslation(text);
-                text = null;
             }
         }
     }
