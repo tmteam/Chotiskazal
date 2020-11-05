@@ -13,10 +13,8 @@ namespace Chotiskazal.Bot.ChatFlows
         }
 
         public string Origin { get; }
-
         public string Translation { get; }
         public string Transcription { get; }
-
         public Phrase[] Phrases { get; }
     }
 }

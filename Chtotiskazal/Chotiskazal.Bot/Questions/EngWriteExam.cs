@@ -34,7 +34,6 @@ namespace Chotiskazal.Bot.Questions
                 if (word.GetAllMeanings()
                     .Any(t => string.Compare(translation, t, StringComparison.OrdinalIgnoreCase) == 0))
                 {
-                    //Console.ForegroundColor = ConsoleColor.Yellow;
                     await chat.SendMessage($"Choosen translation is out of scope (but it is correct). Expected translations are: " + word.Translation);
                     return ExamResult.Impossible;
                 }

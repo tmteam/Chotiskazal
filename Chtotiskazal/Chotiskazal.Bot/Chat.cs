@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -64,6 +65,16 @@ namespace Chotiskazal.Bot
         public Task SendMessage(string message)=> _client.SendTextMessageAsync(_chatId, message);
         public Task SendMessage(string message, params InlineKeyboardButton[] buttons)
             => _client.SendTextMessageAsync(_chatId, message, replyMarkup:  new InlineKeyboardMarkup(buttons.Select(b=>new[]{b})));
+        
+        
+        public Task SendMessage(string message, params KeyboardButton[] buttons)
+            => _client.SendTextMessageAsync(_chatId, message, replyMarkup:  new ReplyKeyboardMarkup(buttons.Select(b=>new[]{b}), oneTimeKeyboard:true));
+
+        public Task SendMessage(string message, IEnumerable<string> keyboard)
+            => _client.SendTextMessageAsync(_chatId, message, replyMarkup:  
+                new ReplyKeyboardMarkup(keyboard.Select(b=> new KeyboardButton(b)), 
+                    oneTimeKeyboard:true, resizeKeyboard:true));
+
         
         public async Task<Update> WaitUserInput()
         {

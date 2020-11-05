@@ -67,7 +67,7 @@ namespace Chotiskazal.Bot.ChatFlows
         {
             if (word == null)
             {
-                await _chat.SendMessage("Enter english word: ",new InlineKeyboardButton
+                await _chat.SendMessage("Enter english word", new InlineKeyboardButton
                 {
                     CallbackData = "/exit",
                     Text = "Cancel"
@@ -77,7 +77,7 @@ namespace Chotiskazal.Bot.ChatFlows
                     var input = await _chat.WaitUserInput();
                     if (input.CallbackQuery != null && input.CallbackQuery.Data == "/exit")
                         throw new ProcessInteruptedWithMenuCommand("/start");
-                    
+
                     if (!string.IsNullOrEmpty(input.Message.Text))
                     {
                         word = input.Message.Text;
@@ -138,47 +138,27 @@ namespace Chotiskazal.Bot.ChatFlows
             }
 
             if (!translations.Any()) return true;
-            
-            // await _chat.SendMessage("e: [back to main menu]");
-            // await _chat.SendMessage("c: [CANCEL THE ENTRY]");
 
             await _chat.SendMessage($"Choose translation for '{word}'",
-                translations.Select(
-                    (p, i) => new InlineKeyboardButton
-                    {
-                        CallbackData = i.ToString(),
-                        Text = p.Phrases.Any()
-                            ? $"{p.Translation}\t (+{p.Phrases.Length})"
-                            :p.Translation
-                    }).ToArray());
-
+                InlineButtons.CreateVariants(translations.Select(t => t.Translation)));
             while (true)
             {
-                var input = await _chat.WaitUserInput();
-                if (input.CallbackQuery != null)
+                var input = await _chat.TryWaitInlineIntKeyboardInput();
+                if (!input.HasValue)
+                    return false;
+                if (input.Value >= 0 && input.Value < translations.Count)
                 {
-                    var btn = input.CallbackQuery.Data;
-                    if (int.TryParse(btn, out var i))
-                    {
-                        if (i >= 0 && i < translations.Count)
-                        {
-                            var selected = translations[i];
-                            //var allTranslations = results.Select(t => t.Translation).ToArray();
-                            var allPhrases = selected.Phrases;// results.SelectMany(t => t.Phrases).ToArray();
-                            _wordService.SaveForExams(
-                                word: word,
-                                transcription: translations[0].Transcription,
-                                translations: new[]{ selected.Translation},
-                                allMeanings: translations.Select(t => t.Translation.Trim().ToLower()).ToArray(),
-                                phrases: allPhrases);
-                            await _chat.SendMessage(
-                                $"Saved. Tranlations: {1}, Phrases: {allPhrases.Length}");
-                            
-                            return true;
-                        }
-                    }
-                    else
-                        return false;
+                    var selected = translations[input.Value];
+                    //var allTranslations = results.Select(t => t.Translation).ToArray();
+                    var allPhrases = selected.Phrases; // results.SelectMany(t => t.Phrases).ToArray();
+                    _wordService.SaveForExams(
+                        word: word,
+                        transcription: translations[0].Transcription,
+                        translations: new[] {selected.Translation},
+                        allMeanings: translations.Select(t => t.Translation.Trim().ToLower()).ToArray(),
+                        phrases: allPhrases);
+                    await _chat.SendMessage($"Saved. Translations: {1}, Phrases: {allPhrases.Length}");
+                    return true;
                 }
             }
         }

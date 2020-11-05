@@ -33,7 +33,7 @@ namespace Chotiskazal.Bot.Questions
             sb.AppendLine($"Choose missing word...");
 
             var variants = examList.Randomize().Select(e => e.OriginWord).ToArray();
-            var _ =chat.SendMessage(sb.ToString(), Buttons.CreateVariants(variants));
+            var _ =chat.SendMessage(sb.ToString(), InlineButtons.CreateVariants(variants));
 
             var choice = await chat.TryWaitInlineIntKeyboardInput();
             if (choice == null)

@@ -33,7 +33,7 @@ namespace Chotiskazal.Bot.Questions
                 .ToArray();
             
             var msg = $"=====>   {targetPhrase.Origin}    <=====\r\nChoose the translation";
-            await chat.SendMessage(msg, Buttons.CreateVariants(variants));
+            await chat.SendMessage(msg, InlineButtons.CreateVariants(variants));
             
             var choice = await chat.TryWaitInlineIntKeyboardInput();
             if (choice == null)

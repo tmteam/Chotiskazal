@@ -18,12 +18,8 @@ namespace Chotiskazal.Bot.Questions
             var variants = examList.Randomize().Select(e => e.OriginWord).ToArray();
 
             var msg = $"=====>   {word.Translation}    <=====\r\nChoose the translation";
-            await chat.SendMessage(msg,
-                variants.Select((v, i) => new InlineKeyboardButton
-                {
-                    CallbackData = i.ToString(),
-                    Text = v
-                }).ToArray());
+            await chat.SendMessage(msg, InlineButtons.CreateVariants(variants));
+            
             var choice = await chat.TryWaitInlineIntKeyboardInput();
             if (choice == null)
                 return ExamResult.Retry;

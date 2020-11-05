@@ -12,7 +12,7 @@ namespace Chotiskazal.Bot.Questions
 
         public async Task<ExamResult> Pass(Chat chat, NewWordsService service, PairModel word, PairModel[] examList)
         {
-            var msg = "=====>   " + word.OriginWord + "    <=====";
+            var msg = $"=====>   {word.OriginWord}    <=====\r\nDo you know the translation?";
             var _ = chat.SendMessage(msg,
                 new InlineKeyboardButton()
                 {

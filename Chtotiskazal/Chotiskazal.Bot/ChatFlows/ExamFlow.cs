@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Chotiskazal.Bot.Questions;
 using Chotiskazal.Logic.DAL;
@@ -106,19 +105,11 @@ namespace Chotiskazal.Bot.ChatFlows
                     if (!learningWords.Contains(pairModel))
                         learnList = learningWords.Append(pairModel).ToArray();
 
-                    if (exam.NeedClearScreen)
+                    if (exam.NeedClearScreen && lastExamResult != ExamResult.Impossible)
                     {
-                        if (lastExamResult == ExamResult.Failed)
-                        {
-                            await _chat.SendMessage("Don't peek\r\n.\r\n.\r\n.\r\n.\r\n.\r\n.\r\n.\r\n.\r\n.\r\n.\r\n.\r\n.");
-                        }
-
-                        if (lastExamResult != ExamResult.Impossible)
-                        {
-                            Console.Clear();
-                            if (lastExamResult == ExamResult.Passed)
-                                await WritePassed();
-                        }
+                        await WriteDontPeakMessage();
+                        if (lastExamResult == ExamResult.Passed)
+                            await WritePassed();
                     }
 
                     var result = await exam.Pass(_chat, _wordsService, pairModel, learnList);
@@ -167,11 +158,12 @@ namespace Chotiskazal.Bot.ChatFlows
             await _chat.SendMessage(doneMessage.ToString());
         }
 
+        private async Task WriteDontPeakMessage() => await _chat.SendMessage("Don't peek\r\n.\r\n.\r\n.\r\n.\r\n.\r\n.\r\n.\r\n.\r\n.\r\n.\r\n.\r\n..\r\n.\r\n.\r\n.Don't peek");
+
         private Task WriteFailed() => _chat.SendMessage("[failed]");
         private Task WritePassed() => _chat.SendMessage("[PASSED]");
-        private static QuestionMetric CreateQuestionMetric(PairModel pairModel, IExam exam)
-        {
-            var questionMetric = new QuestionMetric
+        private static QuestionMetric CreateQuestionMetric(PairModel pairModel, IExam exam) =>
+            new QuestionMetric
             {
                 AggregateScoreBefore = pairModel.AggregateScore,
                 WordId = pairModel.Id,
@@ -183,7 +175,5 @@ namespace Chotiskazal.Bot.ChatFlows
                 Type = exam.Name,
                 WordAdded = pairModel.Created
             };
-            return questionMetric;
-        }
     }
 }

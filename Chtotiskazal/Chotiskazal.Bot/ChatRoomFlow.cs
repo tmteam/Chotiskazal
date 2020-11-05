@@ -115,9 +115,9 @@ namespace Chotiskazal.Bot
             while (true)
             {
                 var _  = Chat.SendMessage("Select mode, or enter a word to translate",
-                    Buttons.EnterWords,
-                    Buttons.Exam,
-                    Buttons.Stats);
+                    InlineButtons.EnterWords,
+                    InlineButtons.Exam,
+                    InlineButtons.Stats);
 
                 while (true)
                 {
@@ -132,18 +132,18 @@ namespace Chotiskazal.Bot
                     if (action.CallbackQuery!=null)
                     {
                         var btn = action.CallbackQuery.Data;
-                        if (btn == Buttons.EnterWords.CallbackData)
+                        if (btn == InlineButtons.EnterWords.CallbackData)
                         {
                             await EnterWord();
                             return;
                         }
-                        else if (btn == Buttons.Exam.CallbackData)
+                        else if (btn == InlineButtons.Exam.CallbackData)
                         {
                             await Examinate();
                             return;
                         }
 
-                        else if (btn == Buttons.Stats.CallbackData)
+                        else if (btn == InlineButtons.Stats.CallbackData)
                         {
                             await ShowStats();
                             return;
