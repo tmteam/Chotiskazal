@@ -21,7 +21,7 @@ namespace Chotiskazal.Bot
             _chatId = chatId;
         }
 
-        public string[] MenuItems = new[] {"/help", "/stats", "/start", "/add", "/train"}; 
+        public string[] MenuItems = {"/help", "/stats", "/start", "/add", "/train"}; 
 
         internal void HandleUpdate(Update args)
         {
@@ -59,11 +59,12 @@ namespace Chotiskazal.Bot
                 src?.SetResult(args);
             }   
         }
+        
         public Task SendTooltip(string tooltip) => _client.SendTextMessageAsync(_chatId, tooltip);
         public Task SendMessage(string message)=> _client.SendTextMessageAsync(_chatId, message);
-
         public Task SendMessage(string message, params InlineKeyboardButton[] buttons)
             => _client.SendTextMessageAsync(_chatId, message, replyMarkup:  new InlineKeyboardMarkup(buttons.Select(b=>new[]{b})));
+        
         public async Task<Update> WaitUserInput()
         {
             _waitInputCompletionSource = new TaskCompletionSource<Update>();
@@ -71,6 +72,45 @@ namespace Chotiskazal.Bot
             var result = await _waitInputCompletionSource.Task;
             Botlog.Write("Got any");
             return result;
+        }
+        
+        public async Task<string> WaitInlineKeyboardInput()
+        {
+            while (true)
+            {
+                var res = await WaitUserInput();
+                if (res.CallbackQuery != null)
+                    return res.CallbackQuery.Data;
+            }
+             
+        }
+
+        public async Task<int?> TryWaitInlineIntKeyboardInput()
+        {
+            var res = await WaitUserInput();
+            if (res.CallbackQuery != null && int.TryParse(res.CallbackQuery.Data, out var i))
+                return i;
+            return null;
+        }
+
+        public async Task<int> WaitInlineIntKeyboardInput()
+        {
+            while (true)
+            {
+                var res = await WaitUserInput();
+                if (res.CallbackQuery != null && int.TryParse(res.CallbackQuery.Data, out var i))
+                    return i;
+            }
+             
+        }
+        public async Task WaitInlineKeyboardInput(string expected)
+        {
+            while (true)
+            {
+                var res = await WaitUserInput();
+                if (res.CallbackQuery?.Data == expected)
+                    return;
+            }
         }
 
         public async Task<string> WaitUserTextInput()

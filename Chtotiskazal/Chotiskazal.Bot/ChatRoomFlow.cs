@@ -47,7 +47,7 @@ namespace Chotiskazal.Bot
         }
         
         Task SendNotAllowedTooltip() => Chat.SendTooltip("action is not allowed");
-        Task Examinate() => Chat.SendTodo();
+        Task Examinate() => new ExamFlow(Chat, WordsService).Enter();
         
         //show stats to user here
         Task ShowStats()
